@@ -494,7 +494,7 @@ static int send_ir_cmd(int freq, void *buffer, int buf_size, uint8_t cmd_id) {
 	pack_size += buf_size;
 	*(uint16_t *)(pack_buf + pack_size) = pack_end_sign;
 	pack_size += sizeof(uint16_t);
-	return send_report_2(pack_buf, pack_size);
+	return send_report_2(pack_buf, pack_size) && set_idle_mode();
 }
 
 /* find a compatible USB receiver and return a usb_device,
@@ -641,7 +641,7 @@ static int set_idle_mode(void){
 }
 
 static int rec_response(void *buf, int buf_size) {
-    uint8_t frag_buf[1024];
+    uint8_t frag_buf[63];
     uint8_t frag_count = 1;
     uint8_t frag_size;
     uint8_t frag_idx = 0;
@@ -652,7 +652,7 @@ static int rec_response(void *buf, int buf_size) {
     while (frag_count - frag_idx > 0) {
         int err = libusb_bulk_transfer(dev_handle, 
             dev_ep_in.bEndpointAddress,
-            frag_buf, 1024, &usb_tx_size, 100);
+            frag_buf, 63, &usb_tx_size, 500);
         if (err) {
             log_info("Error receiving response: %d", err);
             return 1;
@@ -660,8 +660,8 @@ static int rec_response(void *buf, int buf_size) {
         if (frag_idx == 0) {
             frag_count = report_hdr -> frag_count;
         }
-        log_info("Received frag %d of %d", frag_idx, frag_count);
         frag_idx++;
+        log_info("Received frag %d of %d, size: %d", frag_idx, frag_count, usb_tx_size);
     }
     return 1;
 }
