@@ -5,7 +5,7 @@ XenRE's Windows driver (https://gitlab.com/XenRE/tiqiaa-usb-ir) was very helpful
 
 To install:
 
-apt-get install liblirc-dev libusb1.0-0-dev
+apt-get install liblirc-dev libusb-1.0-0-dev
 
 gcc -shared -fPIC tiqiaa.c -lusb-1.0 -llirc -llirc_driver -o tiqlibusb.so
 
